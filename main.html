@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leave Planner</title>
+
+<style>
+body { font-family: 'Segoe UI'; margin:0; background:#f4f6f9; }
+h1 { text-align:center; padding:10px; }
+
+.container { display:flex; flex-direction:column; gap:15px; padding:10px; }
+
+.card {
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+input, select, button {
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+button { background:#007bff; color:white; border:none; font-weight:bold; }
+button:hover { background:#0056b3; cursor:pointer; }
+
+.table-container {
+    overflow-x:auto;
+    background:white;
+    border-radius:12px;
+    padding:10px;
+}
+
+table { border-collapse:collapse; width:max-content; }
+
+th, td {
+    border:1px solid #ddd;
+    padding:6px;
+    text-align:center;
+    font-size:12px;
+}
+
+th { background:#e9ecef; position:sticky; top:0; }
+
+.nameCell {
+    position:sticky;
+    left:0;
+    background:white;
+    font-weight:bold;
+}
+
+.groupRow { background:#343a40; color:white; font-weight:bold; }
+.leave { background:#28a745; color:white; }
+
+@media (min-width:768px){
+    .container { flex-direction:row; }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Leave Planner</h1>
+
+<div class="container">
+
+<div class="card">
+
+<h3>Select Month</h3>
+<select id="monthSelect"></select>
+<select id="yearSelect"></select>
+
+<hr>
+
+<h3>Apply Leave</h3>
+
+<select id="group"></select>
+<select id="employee"></select>
+
+<input type="date" id="start">
+<input type="date" id="end">
+
+<button onclick="addLeave()">Submit</button>
+
+</div>
+
+<div class="card">
+<h3>Manage Leaves</h3>
+<div id="leaveList"></div>
+</div>
+
+<div class="table-container">
+<table id="leaveTable"></table>
+</div>
+
+</div>
+
+<script type="module">
+
+// ===== FIREBASE =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBu5wz6HrytGigtE83CruB128qXspo41wI",
+  authDomain: "leave-17e89.firebaseapp.com",
+  databaseURL: "https://leave-17e89-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "leave-17e89",
+  storageBucket: "leave-17e89.firebasestorage.app",
+  messagingSenderId: "36007163692",
+  appId: "1:36007163692:web:9c90ec1bffbdf1632f5e89",
+  measurementId: "G-N30QLCPF2F"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const leaveCollection = collection(db, "leaves");
+
+// ===== EMPLOYEES =====
+const employees = {
+    E1: ["Ramprit","Harish","Saket","Abhay","Kundan","Ajit","Raghav","Jibraan","Yugank","Pavan","Ashutosh","Ayush","Sai"],
+    E0: ["Prempal","Suraj Tripathi","Lokesh","Ibran Ali","Chetan","Ajay Pal","Manish","Rahul","Aryan","Sunny","Bhawani Kumar",
+         "Karan","Suneet","Mukesh","Hritik","Satish","Rishabh","Sandeep","Rajnish","Manav","Vaibhav","Nisarg","Dharak",
+         "Ravendra","Vivek Mishra","Ripoon","Vipul Das","Subhadip","Sudip","Ajit Tiwari","Akhil","Smit","Taksh","Vishal","Nikhil Kr"]
+};
+
+// ===== MONTH =====
+const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+let today = new Date();
+let selectedMonth = today.getMonth();
+let selectedYear = today.getFullYear();
+
+const monthSelect = document.getElementById("monthSelect");
+const yearSelect = document.getElementById("yearSelect");
+
+monthNames.forEach((m,i)=>{
+    let opt=document.createElement("option");
+    opt.value=i;
+    opt.innerText=m;
+    if(i===selectedMonth) opt.selected=true;
+    monthSelect.appendChild(opt);
+});
+
+for(let y=selectedYear-2;y<=selectedYear+2;y++){
+    let opt=document.createElement("option");
+    opt.value=y;
+    opt.innerText=y;
+    if(y===selectedYear) opt.selected=true;
+    yearSelect.appendChild(opt);
+}
+
+monthSelect.onchange=()=>{selectedMonth=+monthSelect.value; renderTable();}
+yearSelect.onchange=()=>{selectedYear=+yearSelect.value; renderTable();}
+
+// ===== DROPDOWN =====
+const groupSelect=document.getElementById("group");
+const empSelect=document.getElementById("employee");
+
+Object.keys(employees).forEach(g=>{
+    let opt=document.createElement("option");
+    opt.value=g;
+    opt.innerText=g;
+    groupSelect.appendChild(opt);
+});
+
+groupSelect.onchange=updateEmployees;
+
+function updateEmployees(){
+    empSelect.innerHTML="";
+    employees[groupSelect.value].forEach(e=>{
+        let opt=document.createElement("option");
+        opt.value=e;
+        opt.innerText=e;
+        empSelect.appendChild(opt);
+    });
+}
+updateEmployees();
+
+// ===== FIRESTORE STATE =====
+let leaves = [];
+
+// REAL-TIME SYNC
+onSnapshot(leaveCollection, (snapshot) => {
+    leaves = [];
+    snapshot.forEach(docSnap => {
+        leaves.push({
+            id: docSnap.id,
+            ...docSnap.data()
+        });
+    });
+    renderTable();
+    renderLeaveList();
+});
+
+// ===== ADD =====
+async function addLeave(){
+
+    const emp=empSelect.value;
+    const start=document.getElementById("start").value;
+    const end=document.getElementById("end").value;
+
+    if(!emp || !start || !end) return alert("Fill all fields");
+
+    if(start > end) return alert("Invalid dates");
+
+    if(!confirm(`Apply leave for ${emp}?`)) return;
+
+    await addDoc(leaveCollection, { emp, start, end });
+}
+
+// ===== DELETE =====
+async function deleteLeave(id){
+
+    if(!confirm("Delete leave?")) return;
+
+    await deleteDoc(doc(db, "leaves", id));
+}
+
+// ===== LIST =====
+function renderLeaveList(){
+
+    const container=document.getElementById("leaveList");
+    container.innerHTML="";
+
+    if(leaves.length===0){
+        container.innerHTML="<p>No leaves</p>";
+        return;
+    }
+
+    leaves.forEach(l=>{
+        let div=document.createElement("div");
+
+        div.innerHTML=`
+            ${l.emp}: ${l.start} → ${l.end}
+            <button onclick="deleteLeave('${l.id}')" style="background:red;margin-left:10px">X</button>
+        `;
+
+        container.appendChild(div);
+    });
+}
+
+// ===== TABLE =====
+function renderTable(){
+
+    const days=new Date(selectedYear,selectedMonth+1,0).getDate();
+    const table=document.getElementById("leaveTable");
+    table.innerHTML="";
+
+    let h1="<tr><th>Name</th>";
+    let h2="<tr><th></th>";
+
+    for(let d=1;d<=days;d++){
+        let dt=new Date(selectedYear,selectedMonth,d);
+        h1+=`<th>${d}</th>`;
+        h2+=`<th>${dt.toLocaleDateString('en-US',{weekday:'short'})}</th>`;
+    }
+
+    table.innerHTML+=h1+"</tr>"+h2+"</tr>";
+
+    Object.keys(employees).forEach(group=>{
+
+        table.innerHTML+=`<tr class="groupRow">
+            <td colspan="${days+1}">${group}</td>
+        </tr>`;
+
+        employees[group].forEach(emp=>{
+
+            let row=`<tr><td class="nameCell">${emp}</td>`;
+
+            for(let d=1;d<=days;d++){
+
+                let current=new Date(selectedYear,selectedMonth,d)
+                    .toISOString().split('T')[0];
+
+                let isLeave=false;
+
+                leaves.forEach(l=>{
+                    if(l.emp===emp){
+                        if(current>=l.start && current<=l.end){
+                            isLeave=true;
+                        }
+                    }
+                });
+
+                row+=`<td class="${isLeave ? 'leave':''}"></td>`;
+            }
+
+            row+="</tr>";
+            table.innerHTML+=row;
+        });
+    });
+}
+
+</script>
+
+</body>
+</html>
