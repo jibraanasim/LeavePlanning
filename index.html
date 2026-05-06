@@ -6,7 +6,7 @@
 <title>Leave Planner</title>
 
 <style>
-body { font-family: 'Segoe UI'; margin:0; background:#f4f6f9; }
+body { font-family:'Segoe UI'; margin:0; background:#f4f6f9; }
 h1 { text-align:center; padding:10px; }
 
 .container { display:flex; flex-direction:column; gap:15px; padding:10px; }
@@ -113,11 +113,10 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// YOUR CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyBu5wz6HrytGigtE83CruB128qXspo41wI",
   authDomain: "leave-17e89.firebaseapp.com",
-  databaseURL: "https://leave-17e89-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "leave-17e89",
   storageBucket: "leave-17e89.firebasestorage.app",
   messagingSenderId: "36007163692",
@@ -190,10 +189,10 @@ function updateEmployees(){
 }
 updateEmployees();
 
-// ===== FIRESTORE STATE =====
+// ===== STATE =====
 let leaves = [];
 
-// REAL-TIME SYNC
+// REALTIME SYNC
 onSnapshot(leaveCollection, (snapshot) => {
     leaves = [];
     snapshot.forEach(docSnap => {
@@ -224,15 +223,12 @@ async function addLeave(){
 
 // ===== DELETE =====
 async function deleteLeave(id){
-
     if(!confirm("Delete leave?")) return;
-
     await deleteDoc(doc(db, "leaves", id));
 }
 
 // ===== LIST =====
 function renderLeaveList(){
-
     const container=document.getElementById("leaveList");
     container.innerHTML="";
 
@@ -304,6 +300,10 @@ function renderTable(){
         });
     });
 }
+
+// 🔥 FIX: expose functions globally
+window.addLeave = addLeave;
+window.deleteLeave = deleteLeave;
 
 </script>
 
