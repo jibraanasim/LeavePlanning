@@ -279,9 +279,12 @@ function renderTable(){
             let row=`<tr><td class="nameCell">${emp}</td>`;
 
             for(let d=1;d<=days;d++){
-
-                let current=new Date(selectedYear,selectedMonth,d)
-                    .toISOString().split('T')[0];
+                
+                let dt = new Date(selectedYear, selectedMonth, d);
+                let current =
+                    dt.getFullYear() + "-" +
+                    String(dt.getMonth() + 1).padStart(2, '0') + "-" +
+                    String(dt.getDate()).padStart(2, '0');
 
                 let isLeave=false;
 
