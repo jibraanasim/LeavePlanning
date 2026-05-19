@@ -9,9 +9,46 @@
 body { font-family:'Segoe UI'; margin:0; background:#f4f6f9; }
 h1 { text-align:center; padding:10px; }
 #leaveList{
-    max-height:300px;
+    max-height:320px;
     overflow-y:auto;
-    padding-right:5px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding-right:4px;
+}
+
+.leaveRow{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#f8f9fa;
+    padding:8px 10px;
+    border-radius:10px;
+    font-size:13px;
+    border:1px solid #e5e7eb;
+}
+
+.leaveText{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.leaveDelete{
+    background:#dc3545;
+    border:none;
+    color:white;
+    width:24px;
+    height:24px;
+    border-radius:50%;
+    font-size:12px;
+    cursor:pointer;
+    padding:0;
+    flex-shrink:0;
+}
+
+.leaveDelete:hover{
+    background:#b02a37;
 }
 .container { display:flex; flex-direction:column; gap:15px; padding:10px; }
 
@@ -245,10 +282,19 @@ function renderLeaveList(){
     leaves.forEach(l=>{
         let div=document.createElement("div");
 
-        div.innerHTML=`
-            ${l.emp}: ${l.start} → ${l.end}
-            <button onclick="deleteLeave('${l.id}')" style="background:red;margin-left:10px">X</button>
-        `;
+        div.className="leaveRow";
+
+            div.innerHTML=`
+                <div class="leaveText">
+                    <b>${l.emp}</b><br>
+                    ${l.start} → ${l.end}
+                </div>
+            
+                <button class="leaveDelete"
+                    onclick="deleteLeave('${l.id}')">
+                    ✕
+                </button>
+            `;
 
         container.appendChild(div);
     });
