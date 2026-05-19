@@ -280,8 +280,9 @@ function renderTable(){
 
             for(let d=1;d<=days;d++){
 
-                let current=new Date(selectedYear,selectedMonth,d)
-                    .toISOString().split('T')[0];
+               ''' let current=new Date(selectedYear,selectedMonth,d)
+                    .toISOString().split('T')[0]; ''' old calender logic
+                let current = selectedYear + "-" + String(selectedMonth + 1).padStart(2,'0') + "-" + String(d).padStart(2,'0');
 
                 let isLeave=false;
 
