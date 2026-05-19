@@ -281,7 +281,8 @@ function renderTable(){
             for(let d=1;d<=days;d++){
 
                 let current=new Date(selectedYear,selectedMonth,d)
-                    .toISOString().split('T')[0]; ''' old calender logic
+                    .toISOString().split('T')[0];
+
                 let isLeave=false;
 
                 leaves.forEach(l=>{
@@ -309,3 +310,5 @@ window.deleteLeave = deleteLeave;
 
 </body>
 </html>
+
+which part of code marks the leaves as green boxes on roster
