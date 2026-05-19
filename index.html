@@ -132,6 +132,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const leaveCollection = collection(db, "leaves");
+const historyCollection = collection(db, "leaveHistory");
 
 // ===== EMPLOYEES =====
 const employees = {
@@ -224,11 +225,24 @@ async function addLeave(){
     if(!confirm(`Apply leave for ${emp}?`)) return;
 
     await addDoc(leaveCollection, { emp, start, end });
+    await addDoc(historyCollection,{
+          action:"SUBMIT",
+          emp,start,end,
+          createdAt:new Date().toISOString(),
+          logName:`Leave ${new Date().toLocaleString()}`
+        });
 }
 
 // ===== DELETE =====
 async function deleteLeave(id){
     if(!confirm("Delete leave?")) return;
+    const leave = leaves.find(l=>l.id===id);
+    await addDoc(historyCollection,{
+      action:"DELETE",
+      ...leave,
+      createdAt:new Date().toISOString(),
+      logName:`Leave ${new Date().toLocaleString()}`
+        });
     await deleteDoc(doc(db, "leaves", id));
 }
 
