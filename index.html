@@ -94,15 +94,8 @@ th { background:#e9ecef; position:sticky; top:0; }
 </div>
 
 <div class="card">
-
 <h3>Manage Leaves</h3>
 <div id="leaveList"></div>
-
-<hr>
-
-<h3>Deleted Leaves</h3>
-<div id="deletedLeaveList"></div>
-
 </div>
 
 <div class="table-container">
@@ -119,7 +112,7 @@ import {
   getFirestore,
   collection,
   addDoc,
-  updateDoc,
+  deleteDoc,
   doc,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -215,7 +208,6 @@ onSnapshot(leaveCollection, (snapshot) => {
     });
     renderTable();
     renderLeaveList();
-    renderDeletedLeaves();
 });
 
 // ===== ADD =====
@@ -235,19 +227,9 @@ async function addLeave(){
 }
 
 // ===== DELETE =====
-    async function deleteLeave(id){
-
+async function deleteLeave(id){
     if(!confirm("Delete leave?")) return;
-
-    await updateDoc(doc(db, "leaves", id), {
-        deleted: true
-    });
-}
-    async function restoreLeave(id){
-
-    await updateDoc(doc(db, "leaves", id), {
-        deleted: false
-    });
+    await deleteDoc(doc(db, "leaves", id));
 }
 
 // ===== LIST =====
@@ -260,40 +242,12 @@ function renderLeaveList(){
         return;
     }
 
-    leaves.forEach(l=>{leaves.forEach(l=>{
-        if(l.deleted) return;
+    leaves.forEach(l=>{
         let div=document.createElement("div");
 
         div.innerHTML=`
             ${l.emp}: ${l.start} → ${l.end}
             <button onclick="deleteLeave('${l.id}')" style="background:red;margin-left:10px">X</button>
-        `;
-
-        container.appendChild(div);
-    });
-}
-                   function renderDeletedLeaves(){
-
-    const container=document.getElementById("deletedLeaveList");
-
-    container.innerHTML="";
-
-    leaves.forEach(l=>{
-
-        if(!l.deleted) return;
-
-        let div=document.createElement("div");
-
-        div.style.marginBottom="6px";
-        div.style.fontSize="13px";
-
-        div.innerHTML=`
-            ${l.emp}: ${l.start} → ${l.end}
-
-            <button onclick="restoreLeave('${l.id}')"
-                style="background:green;margin-left:10px">
-                Restore
-            </button>
         `;
 
         container.appendChild(div);
@@ -339,11 +293,11 @@ function renderTable(){
                 let isLeave=false;
 
                 leaves.forEach(l=>{
-                   if(l.emp===emp && !l.deleted){
-    if(current>=l.start && current<=l.end){
-        isLeave=true;
-    }
-}
+                    if(l.emp===emp){
+                        if(current>=l.start && current<=l.end){
+                            isLeave=true;
+                        }
+                    }
                 });
 
                 row+=`<td class="${isLeave ? 'leave':''}"></td>`;
@@ -358,7 +312,6 @@ function renderTable(){
 // 🔥 FIX: expose functions globally
 window.addLeave = addLeave;
 window.deleteLeave = deleteLeave;
-window.restoreLeave = restoreLeave;
 
 </script>
 
