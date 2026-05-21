@@ -272,49 +272,8 @@ hr{
     }
 }
 ```css id="v3f8xn"
-/* ===== ANALYTICS ===== */
 
-.statsCard h3{
-    margin-bottom:16px;
-}
 
-.statsGrid{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:12px;
-}
-
-.statBox{
-    background:rgba(255,255,255,0.05);
-
-    border:1px solid rgba(255,255,255,0.06);
-
-    border-radius:16px;
-
-    padding:14px;
-
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-}
-
-.statLabel{
-    color:#94a3b8;
-    font-size:13px;
-}
-
-.statValue{
-    font-size:28px;
-    font-weight:700;
-    color:white;
-}
-
-@media(min-width:768px){
-
-    .statsGrid{
-        grid-template-columns:1fr;
-    }
-}
 
 /* ===== HEADER ===== */
 
@@ -524,32 +483,6 @@ transform:translateY(-100%);
 </div>
 
 
-<div class="card statsCard">
-
-    <h3>Leave Analytics</h3>
-
-    <div class="statsGrid">
-
-        <div class="statBox">
-            <span class="statLabel">Average Leaves / Day</span>
-            <span class="statValue" id="avgLeaves">0</span>
-        </div>
-
-        <div class="statBox">
-            <span class="statLabel">Most Concurrent Leaves</span>
-            <span class="statValue" id="maxLeaves">0</span>
-        </div>
-
-        <div class="statBox">
-            <span class="statLabel">Least Concurrent Leaves</span>
-            <span class="statValue" id="minLeaves">0</span>
-        </div>
-
-    </div>
-
-</div>
-```
-
 
 
 <div class="table-container">
@@ -717,52 +650,6 @@ function renderLeaveList(){
         container.appendChild(div);
     });
 }
-```javascript id="c1zt8q"
-function renderStats(){
-
-    const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-
-    let totalLeaves = 0;
-    let maxLeaves = 0;
-    let minLeaves = Infinity;
-
-    for(let d = 1; d <= daysInMonth; d++){
-
-        let dt = new Date(selectedYear, selectedMonth, d);
-
-        let current =
-            dt.getFullYear() + "-" +
-            String(dt.getMonth() + 1).padStart(2,'0') + "-" +
-            String(dt.getDate()).padStart(2,'0');
-
-        let count = 0;
-
-        leaves.forEach(l => {
-
-            if(current >= l.start && current <= l.end){
-                count++;
-            }
-
-        });
-
-        totalLeaves += count;
-
-        if(count > maxLeaves){
-            maxLeaves = count;
-        }
-
-        if(count < minLeaves){
-            minLeaves = count;
-        }
-    }
-
-    let avg = (totalLeaves / daysInMonth).toFixed(1);
-
-    document.getElementById("avgLeaves").innerText = avg;
-    document.getElementById("maxLeaves").innerText = maxLeaves;
-    document.getElementById("minLeaves").innerText = minLeaves;
-}
-```
 
 // ===== TABLE =====
 function renderTable(){
