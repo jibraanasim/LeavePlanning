@@ -688,6 +688,7 @@ async function deleteLeave(id){
 
 // ===== LIST =====
 function renderLeaveList(){
+    if(!document.getElementById("avgLeaves")) return;
     const container=document.getElementById("leaveList");
     container.innerHTML="";
 
