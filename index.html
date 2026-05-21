@@ -230,8 +230,6 @@ hr{
     }
 }
 
-    /* ===== COLLAPSIBLE LEAVES ===== */ .collapsibleCard{ overflow:hidden; } .collapseHeader{ display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; } .collapseHeader h3{ margin:0; } #collapseIcon{ font-size:14px; color:#cbd5e1; transition:0.25s ease; } #leaveWrapper{ margin-top:14px; max-height:420px; overflow:hidden; transition: max-height 0.35s ease, opacity 0.25s ease; opacity:1; }
-
 ```css
 /* ===== HEADER ===== */
 
@@ -421,25 +419,10 @@ transform:translateY(-100%);
 
 </div>
 
-<div class="card collapsibleCard">
-
-    <div class="collapseHeader" onclick="toggleLeaves()">
-
-        <h3>Manage Leaves</h3>
-
-        <span id="collapseIcon">▼</span>
-
-    </div>
-
-    <div id="leaveWrapper">
-
-        <div id="leaveList"></div>
-
-    </div>
-
+<div class="card">
+<h3>Manage Leaves</h3>
+<div id="leaveList"></div>
 </div>
-```
-
 
 <div class="table-container">
 <table id="leaveTable"></table>
@@ -478,7 +461,7 @@ const leaveCollection = collection(db, "leaves");
 
 // ===== EMPLOYEES =====
 const employees = {
-    E1: ["Ramprit","Harish","Saketh","Abhay","Kundan","Ajit","Raghav","Jibraan","Yugank","Pavan","Ashutosh","Ayush","Sai","Pawan Saini", "Vedant"],
+    E1: ["Ramprit","Harish","Saketh","Abhay","Kundan","Ajit","Raghav","Jibraan","Yugank","Pavan","Santosh","Ashutosh","Ayush","Sai","Pawan Saini", "Vedant"],
     E0: ["Prempal","Suraj Tripathi","Lokesh","Ibran Ali","Chetan","Ajay Pal","Manish","Rahul","Aryan","Sunny","Bhawani Kumar",
          "Karan","Suneet","Mukesh","Hritik","Satish","Rishabh","Sandeep","Rajnish","Manav","Vaibhav","Nisarg","Dharak",
          "Ravendra","Vivek Mishra","Ripoon","Vipul Das","Subhadip","Sudip","Ajit Tiwari","Akhil","Smit","Taksh","Vishal","Nikhil Kr"]
@@ -664,25 +647,6 @@ function renderTable(){
 // 🔥 FIX: expose functions globally
 window.addLeave = addLeave;
 window.deleteLeave = deleteLeave;
-window.toggleLeaves = toggleLeaves;
-function toggleLeaves(){
-
-    const wrapper = document.getElementById("leaveWrapper");
-    const icon = document.getElementById("collapseIcon");
-
-    if(wrapper.style.display === "none"){
-
-        wrapper.style.display = "block";
-        icon.innerHTML = "▼";
-
-    } else {
-
-        wrapper.style.display = "none";
-        icon.innerHTML = "►";
-    }
-}
-```
-
 
 </script>
 
